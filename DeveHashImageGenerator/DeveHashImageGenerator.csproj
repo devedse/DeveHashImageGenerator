@@ -1,13 +1,38 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
-  </ItemGroup>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<ItemGroup>
+			<RobohashSets Include="$(ProjectDir)..\submodules\Robohash\robohash\sets\**\*.*" />
+			<RobohashBackgrounds Include="$(ProjectDir)..\submodules\Robohash\robohash\backgrounds\**\*.*" />
+		</ItemGroup>
 
+		<Copy SourceFiles="@(RobohashSets)"
+			  DestinationFolder="$(TargetDir)sets\%(RecursiveDir)"
+			  SkipUnchangedFiles="true"
+			  OverwriteReadOnlyFiles="true"
+			  Retries="3"
+			  RetryDelayMilliseconds="1000">
+			<Output TaskParameter="CopiedFiles" ItemName="FilesCopied" />
+		</Copy>
+
+		<Copy SourceFiles="@(RobohashBackgrounds)"
+			  DestinationFolder="$(TargetDir)backgrounds\%(RecursiveDir)"
+			  SkipUnchangedFiles="true"
+			  OverwriteReadOnlyFiles="true"
+			  Retries="3"
+			  RetryDelayMilliseconds="1000">
+			<Output TaskParameter="CopiedFiles" ItemName="BackgroundFilesCopied" />
+		</Copy>
+
+		<Message Importance="high" Text="Copied @(FilesCopied) and @(BackgroundFilesCopied)"/>
+	</Target>
 </Project>

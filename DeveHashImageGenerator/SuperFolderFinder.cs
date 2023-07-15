@@ -13,6 +13,14 @@ namespace DeveHashImageGenerator
 
         private static string GenerateRoboFlowDirectory()
         {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var potentialSetsDirectory = Path.Combine(currentDirectory, "sets");
+            if (Directory.Exists(potentialSetsDirectory))
+            {
+                return potentialSetsDirectory;
+            }
+
+            //For tests
             return Path.Join(SubmodulesDirectory, "Robohash", "robohash");
         }
 
