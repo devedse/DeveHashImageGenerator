@@ -43,8 +43,6 @@ namespace DeveHashImageGenerator.RoboHash
 
         private List<long> CreateHashes(string hexdigest, int count)
         {
-            Console.WriteLine($"Hexdigest: {hexdigest}");
-
             List<long> hashArray = new List<long>();
             int blockSize = hexdigest.Length / count;
 
@@ -54,7 +52,6 @@ namespace DeveHashImageGenerator.RoboHash
                 int currentEnd = (1 + i) * blockSize;
                 string sub = hexdigest.Substring(currentStart, blockSize);
                 hashArray.Add(Convert.ToInt64(sub, 16));
-                Console.WriteLine($"{i}: {sub} => {Convert.ToInt64(sub, 16)}");
             }
 
             hashArray.AddRange(hashArray);
@@ -67,7 +64,11 @@ namespace DeveHashImageGenerator.RoboHash
                 .GetDirectories(path)
                 .Select(t => Path.GetFileName(t))
                 .Where(t => !string.IsNullOrWhiteSpace(t) && !t.StartsWith("."))
-                .Select(t => t!);
+                .Select(t => t!)
+                .OrderBy(t => t);
+
+            Console.WriteLine("ListDirs:");
+            Console.WriteLine(string.Join(",", allItems));
 
             return allItems.ToList();
         }
@@ -129,8 +130,6 @@ namespace DeveHashImageGenerator.RoboHash
             {
                 inputString = RemoveExtensions(inputString);
             }
-
-            Console.WriteLine($"InputString: {inputString}");
 
             // Hash the string
             string hexdigest;
