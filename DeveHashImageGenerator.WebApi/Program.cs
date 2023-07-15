@@ -23,8 +23,6 @@ namespace DeveHashImageGenerator.WebApi
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
-
             app.UseAuthorization();
 
 
