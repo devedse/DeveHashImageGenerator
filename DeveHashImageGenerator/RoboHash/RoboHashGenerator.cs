@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using NaturalSort.Extension;
+using System.Security.Cryptography;
 using System.Text;
 using Image = SixLabors.ImageSharp.Image;
 
@@ -65,10 +66,7 @@ namespace DeveHashImageGenerator.RoboHash
                 .Select(t => Path.GetFileName(t))
                 .Where(t => !string.IsNullOrWhiteSpace(t) && !t.StartsWith("."))
                 .Select(t => t!)
-                .OrderBy(t => t);
-
-            Console.WriteLine("ListDirs:");
-            Console.WriteLine(string.Join(",", allItems));
+                .OrderBy(t => t, StringComparison.OrdinalIgnoreCase.WithNaturalSort());
 
             return allItems.ToList();
         }
@@ -83,32 +81,16 @@ namespace DeveHashImageGenerator.RoboHash
             var iter = 4;
 
             List<string> chosenFiles = new List<string>();
-            var directories = new List<string>();
-
-            // get all sub-directories
-            foreach (var directory in Directory.GetDirectories(path, "*", SearchOption.AllDirectories))
-            {
-                // Ignore hidden directories
-                if (!Path.GetFileName(directory).StartsWith('.'))
-                {
-                    directories.Add(directory);
-                }
-            }
-
-            // sort directories in natural order
-            directories = directories.OrderBy(s => s).ToList();
+            var directories = Directory.GetDirectories(path, "*", SearchOption.AllDirectories)
+                .Where(t => !Path.GetFileName(t).StartsWith('.')) //Ignore hidden directories
+                .OrderBy(s => s, StringComparison.OrdinalIgnoreCase.WithNaturalSort()) // sort directories in natural order
+                .ToList();
 
             foreach (var directory in directories)
             {
-                var filesInDir = new List<string>();
-
-                foreach (var file in Directory.GetFiles(directory))
-                {
-                    filesInDir.Add(file);
-                }
-
-                // sort files in natural order
-                filesInDir = filesInDir.OrderBy(s => s).ToList();
+                var filesInDir = Directory.GetFiles(directory)
+                    .OrderBy(s => s, StringComparison.OrdinalIgnoreCase.WithNaturalSort()) // sort files in natural order
+                    .ToList();
 
                 if (filesInDir.Any())
                 {
