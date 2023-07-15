@@ -9,30 +9,20 @@
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
 	</ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<ItemGroup>
-			<RobohashSets Include="$(ProjectDir)..\submodules\Robohash\robohash\sets\**\*.*" />
-			<RobohashBackgrounds Include="$(ProjectDir)..\submodules\Robohash\robohash\backgrounds\**\*.*" />
-		</ItemGroup>
-
-		<Copy SourceFiles="@(RobohashSets)"
-			  DestinationFolder="$(TargetDir)sets\%(RecursiveDir)"
-			  SkipUnchangedFiles="true"
-			  OverwriteReadOnlyFiles="true"
-			  Retries="3"
-			  RetryDelayMilliseconds="1000">
-			<Output TaskParameter="CopiedFiles" ItemName="FilesCopied" />
-		</Copy>
-
-		<Copy SourceFiles="@(RobohashBackgrounds)"
-			  DestinationFolder="$(TargetDir)backgrounds\%(RecursiveDir)"
-			  SkipUnchangedFiles="true"
-			  OverwriteReadOnlyFiles="true"
-			  Retries="3"
-			  RetryDelayMilliseconds="1000">
-			<Output TaskParameter="CopiedFiles" ItemName="BackgroundFilesCopied" />
-		</Copy>
-
-		<Message Importance="high" Text="Copied @(FilesCopied) and @(BackgroundFilesCopied)"/>
-	</Target>
+	<ItemGroup>
+		<None Include="$(ProjectDir)..\submodules\Robohash\robohash\sets\**\*.*">
+			<Link>sets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<PackagePath>sets\%(RecursiveDir)</PackagePath>
+		</None>
+		<None Include="$(ProjectDir)..\submodules\Robohash\robohash\backgrounds\**\*.*">
+			<Link>backgrounds\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<PackagePath>backgrounds\%(RecursiveDir)</PackagePath>
+		</None>
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Content Remove="C:\XGitPrivate\DeveHashImageGenerator\DeveHashImageGenerator\..\submodules\Robohash\robohash\sets\**" />
+	</ItemGroup>
 </Project>

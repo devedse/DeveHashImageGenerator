@@ -17,10 +17,9 @@ namespace DeveHashImageGenerator
             var potentialSetsDirectory = Path.Combine(currentDirectory, "sets");
             if (Directory.Exists(potentialSetsDirectory))
             {
-                return potentialSetsDirectory;
+                return currentDirectory;
             }
 
-            //For tests
             return Path.Join(SubmodulesDirectory, "Robohash", "robohash");
         }
 
