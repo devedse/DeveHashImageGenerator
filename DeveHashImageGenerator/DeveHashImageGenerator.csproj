@@ -3,6 +3,10 @@
 		<TargetFramework>net7.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<Authors>Devedse</Authors>
+		<Description>This is a C# library to generate images from things like RoboHash. It's natively implemented in C#.</Description>
+		<PackageProjectUrl>https://github.com/devedse/DeveHashImageGenerator</PackageProjectUrl>
+		<PackageTags>csharp;robohash;hashimage;gravatar</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
