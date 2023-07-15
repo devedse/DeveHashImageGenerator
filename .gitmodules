@@ -1,0 +1,4 @@
+[submodule "submodules/Robohash"]
+	path = submodules/Robohash
+	url = https://github.com/e1ven/Robohash.git
+	branch = master
