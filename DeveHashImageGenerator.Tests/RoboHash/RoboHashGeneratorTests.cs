@@ -11,14 +11,14 @@ namespace DeveHashImageGenerator.Tests.RoboHash
         public void GeneratesAnImageBasedOnAHash()
         {
             var roboHashGenerator = new RoboHashGenerator();
-            using (var image = roboHashGenerator.Assemble("10.88.10.1"))
+            using (var image = roboHashGenerator.Assemble("10.88.10.1", sizeX: 500, sizeY: 550))
             {
                 // Save the image to "output_GeneratesAnImageBasedOnAHash.png".
                 image.Save("output_GeneratesAnImageBasedOnAHash.png");
 
                 // Assert that the image isn't empty.
-                Assert.AreNotEqual(0, image.Width);
-                Assert.AreNotEqual(0, image.Height);
+                Assert.AreEqual(500, image.Width);
+                Assert.AreEqual(550, image.Height);
 
                 // Assert that the image contains colored pixels.
                 bool containsColoredPixels = ContainsColoredPixels(image);
