@@ -10,8 +10,8 @@ namespace DeveHashImageGenerator.Tests.RoboHash
         [TestMethod]
         public void GeneratesAnImageBasedOnAHash()
         {
-            var roboHashGenerator = new RoboHashGenerator("10.88.10.1");
-            using (var image = roboHashGenerator.Assemble())
+            var roboHashGenerator = new RoboHashGenerator();
+            using (var image = roboHashGenerator.Assemble("10.88.10.1"))
             {
                 // Save the image to "output_GeneratesAnImageBasedOnAHash.png".
                 image.Save("output_GeneratesAnImageBasedOnAHash.png");

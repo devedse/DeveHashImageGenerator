@@ -1,37 +1,23 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace DeveHashImageGenerator.RoboHash
 {
     public class RoboHashGenerator
     {
-        private string _hexdigest;
-        private List<long> _hashArray = new List<long>();
-        private int _iter = 4;
+        private readonly int _hashCount;
+        private readonly bool _ignoreExt;
+
         private string _resourceDir = SuperFolderFinder.RoboFlowDirectory;
         private List<string> _sets;
         private List<string> _bgSets;
         private List<string> _colors;
 
-        public RoboHashGenerator(string inputString, int hashCount = 11, bool ignoreExt = true)
+        public RoboHashGenerator(int hashCount = 11, bool ignoreExt = true)
         {
-            // Remove image extensions before hashing
-            if (ignoreExt)
-            {
-                inputString = RemoveExtensions(inputString);
-            }
-
-            // Hash the string
-            using (SHA512 sha512 = SHA512.Create())
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(inputString);
-                byte[] hash = sha512.ComputeHash(bytes);
-                _hexdigest = BitConverter.ToString(hash).Replace("-", string.Empty);
-            }
-
-            CreateHashes(hashCount);
+            _hashCount = hashCount;
+            _ignoreExt = ignoreExt;
 
             _sets = ListDirs(Path.Combine(_resourceDir, "sets"));
             _bgSets = ListDirs(Path.Combine(_resourceDir, "backgrounds"));
@@ -55,8 +41,9 @@ namespace DeveHashImageGenerator.RoboHash
             return input;
         }
 
-        private void CreateHashes(int count)
+        private List<long> CreateHashes(string _hexdigest, int count)
         {
+            List<long> hashArray = new List<long>();
             int blockSize = _hexdigest.Length / count;
 
             for (int i = 0; i < count; i++)
@@ -64,10 +51,11 @@ namespace DeveHashImageGenerator.RoboHash
                 int currentStart = (1 + i) * blockSize - blockSize;
                 int currentEnd = (1 + i) * blockSize;
                 string sub = _hexdigest.Substring(currentStart, blockSize);
-                _hashArray.Add(Convert.ToInt64(sub, 16));
+                hashArray.Add(Convert.ToInt64(sub, 16));
             }
 
-            _hashArray.AddRange(_hashArray);
+            hashArray.AddRange(hashArray);
+            return hashArray;
         }
 
         private List<string> ListDirs(string path)
@@ -81,8 +69,15 @@ namespace DeveHashImageGenerator.RoboHash
             return allItems.ToList();
         }
 
-        private List<string> GetListOfFiles(string path)
+        private List<string> GetListOfFiles(List<long> hashArray, string path)
         {
+            // Start this at 4, so earlier is reserved
+            //0 = Color
+            //1 = Set
+            //2 = bgset
+            //3 = BG
+            var iter = 4;
+
             List<string> chosenFiles = new List<string>();
             var directories = new List<string>();
 
@@ -114,9 +109,9 @@ namespace DeveHashImageGenerator.RoboHash
                 if (filesInDir.Any())
                 {
                     // Use some of our hash bits to choose which file
-                    var elementInList = _hashArray[_iter] % filesInDir.Count;
+                    var elementInList = hashArray[iter] % filesInDir.Count;
                     chosenFiles.Add(filesInDir[(int)elementInList]);
-                    _iter++;
+                    iter++;
                 }
             }
 
@@ -124,59 +119,72 @@ namespace DeveHashImageGenerator.RoboHash
         }
 
 
-        public Image<Rgba32> Assemble(string roboSet = null, string color = null, string format = null, string bgSet = null, int sizeX = 300, int sizeY = 300)
+        public Image<Rgba32> Assemble(string inputString, string? roboSet = null, string? color = null, string? format = null, string? bgSet = null, int sizeX = 300, int sizeY = 300)
         {
+            // Remove image extensions before hashing
+            if (_ignoreExt)
+            {
+                inputString = RemoveExtensions(inputString);
+            }
+
+            // Hash the string
+            string hexdigest;
+            using (SHA512 sha512 = SHA512.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(inputString);
+                byte[] hash = sha512.ComputeHash(bytes);
+                hexdigest = BitConverter.ToString(hash).Replace("-", string.Empty);
+            }
+
+            var hashArray = CreateHashes(hexdigest, _hashCount);
+
             if (roboSet == "any")
             {
-                roboSet = _sets[(int)(_hashArray[1] % _sets.Count)];
+                roboSet = _sets[(int)(hashArray[1] % _sets.Count)];
             }
-            else if (_sets.Contains(roboSet))
-            {
-                roboSet = roboSet;
-            }
-            else
+            else if (roboSet == null || !_sets.Contains(roboSet))
             {
                 roboSet = _sets[0];
             }
 
             if (roboSet == "set1")
             {
-                if (_colors.Contains(color))
+                if (color != null && _colors.Contains(color))
                 {
                     roboSet = "set1/" + color;
                 }
                 else
                 {
-                    string randomColor = _colors[(int)(_hashArray[0] % _colors.Count)];
+                    string randomColor = _colors[(int)(hashArray[0] % _colors.Count)];
                     roboSet = "set1/" + randomColor;
                 }
             }
 
-            if (_bgSets.Contains(bgSet))
+            if (bgSet == "any")
             {
-                bgSet = bgSet;
+                bgSet = _bgSets[(int)(hashArray[2] % _bgSets.Count)];
             }
-            else if (bgSet == "any")
+            else if (bgSet == null || !_bgSets.Contains(bgSet))
             {
-                bgSet = _bgSets[(int)(_hashArray[2] % _bgSets.Count)];
+                bgSet = null;
             }
 
-            List<string> roboParts = GetListOfFiles(Path.Combine(_resourceDir, "sets", roboSet));
+            var roboParts = GetListOfFiles(hashArray, Path.Combine(_resourceDir, "sets", roboSet));
             roboParts = roboParts.OrderBy(x => x.Split("#")[1]).ToList();
 
-            string background = null;
+            string? background = null;
             if (bgSet != null)
             {
                 List<string> bgList = Directory.GetFiles(Path.Combine(_resourceDir, "backgrounds", bgSet)).ToList();
-                background = bgList[(int)(_hashArray[3] % bgList.Count)];
+                background = bgList[(int)(hashArray[3] % bgList.Count)];
             }
 
-            Image<Rgba32> roboImg = Image.Load<Rgba32>(roboParts[0]);
+            var roboImg = Image.Load<Rgba32>(roboParts[0]);
             roboImg.Mutate(x => x.Resize(1024, 1024));
 
             foreach (string png in roboParts)
             {
-                using (Image<Rgba32> img = Image.Load<Rgba32>(png))
+                using (var img = Image.Load<Rgba32>(png))
                 {
                     img.Mutate(x => x.Resize(1024, 1024));
                     roboImg.Mutate(context => context.DrawImage(img, new Point(0, 0), 1));
@@ -185,7 +193,7 @@ namespace DeveHashImageGenerator.RoboHash
 
             if (bgSet != null)
             {
-                using (Image<Rgba32> bg = Image.Load<Rgba32>(background))
+                using (var bg = Image.Load<Rgba32>(background))
                 {
                     bg.Mutate(x => x.Resize(1024, 1024));
                     bg.Mutate(context => context.DrawImage(roboImg, new Point(0, 0), 1));
