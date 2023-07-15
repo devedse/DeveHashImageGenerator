@@ -1,4 +1,6 @@
 
+using Microsoft.AspNetCore.Rewrite;
+
 namespace DeveHashImageGenerator.WebApi
 {
     public class Program
@@ -16,12 +18,19 @@ namespace DeveHashImageGenerator.WebApi
 
             var app = builder.Build();
 
+            //Redirect to /swagger
+            var option = new RewriteOptions();
+            option.AddRedirect("^$", "swagger");
+            app.UseRewriter(option);
+
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            app.UseHttpsRedirection();
+
+            // Use the CORS policy
+            app.UseCors();
 
             app.UseAuthorization();
 
