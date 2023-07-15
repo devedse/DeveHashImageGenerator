@@ -10,19 +10,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="$(ProjectDir)..\submodules\Robohash\robohash\sets\**\*.*">
+		<Content Include="$(ProjectDir)..\submodules\Robohash\robohash\sets\**\*.*">
 			<Link>sets\%(RecursiveDir)%(Filename)%(Extension)</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<PackagePath>sets\%(RecursiveDir)</PackagePath>
-		</None>
-		<None Include="$(ProjectDir)..\submodules\Robohash\robohash\backgrounds\**\*.*">
+		</Content>
+		<Content Include="$(ProjectDir)..\submodules\Robohash\robohash\backgrounds\**\*.*">
 			<Link>backgrounds\%(RecursiveDir)%(Filename)%(Extension)</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<PackagePath>backgrounds\%(RecursiveDir)</PackagePath>
-		</None>
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Content Remove="C:\XGitPrivate\DeveHashImageGenerator\DeveHashImageGenerator\..\submodules\Robohash\robohash\sets\**" />
+		</Content>
 	</ItemGroup>
 </Project>
