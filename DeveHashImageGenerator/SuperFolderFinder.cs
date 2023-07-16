@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,10 +15,21 @@ namespace DeveHashImageGenerator
         private static string GenerateRoboFlowDirectory()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            var potentialSetsDirectory = Path.Combine(currentDirectory, "sets");
-            if (Directory.Exists(potentialSetsDirectory))
+            var possibleDirectory = Path.Combine(currentDirectory, "DeveHashImageGeneratorContent", "Robohash");
+            if (Directory.Exists(Path.Combine(possibleDirectory, "sets")))
             {
-                return currentDirectory;
+                return possibleDirectory;
+            }
+
+            var assemblyPath = typeof(SuperFolderFinder).Assembly.Location;
+            var assemblyFolderPath = Path.GetDirectoryName(assemblyPath);
+            possibleDirectory = Path.Combine(assemblyFolderPath, "DeveHashImageGeneratorContent", "Robohash");
+            if (assemblyFolderPath != null)
+            {
+                if (Directory.Exists(Path.Combine(possibleDirectory, "sets")))
+                {
+                    return possibleDirectory;
+                }
             }
 
             return Path.Join(SubmodulesDirectory, "Robohash", "robohash");
